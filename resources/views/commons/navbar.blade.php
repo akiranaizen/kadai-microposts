@@ -20,7 +20,7 @@
                             <li class="dropdown-item">{!! link_to_route('users.show', 'My profile', ['user' => Auth::id()]) !!}</li>
                             
                             {{-- お気に入りページへのリンク --}}
-                            <li class="dropdown-item">{!! link_to_route('users.favorites', 'Favorites', ['id' => $user->id]) !!}</li>
+                            <li class="dropdown-item">{!! link_to_route('users.favorites', 'Favorites', ['id' => Auth::id()]) !!}</li>
                             
                             <li class="dropdown-divider"></li>
                             {{-- ログアウトへのリンク --}}
