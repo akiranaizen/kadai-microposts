@@ -131,6 +131,71 @@ class User extends Authenticatable
     
     public function loadRelationshipCounts()
     {
-        $this->loadCount(['microposts', 'followings', 'followers']);
+        $this->loadCount(['microposts', 'followings', 'followers','favorites']);
     }
+    
+    /**
+     * このユーザがお気に入り中の投稿。（ Userモデルとの関係を定義）
+     */
+    public function favorites()
+    {
+        //belongsToManyの第一引数にはどのモデルとの関係を結ぶのか指定します。
+        //お気に入り機能はUserがMicropostをお気に入りする機能ですので、 User.php が Micropost::class をお気に入りするという関係で定義する形になります
+        return $this->belongsToMany(Micropost::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
+    }
+    
+    /**
+     * $micropostsIdで指定された投稿をお気に入りする。
+     *
+     * @param  int  $micropostsId
+     * @return bool
+     */
+    public function favorite($micropostsId)
+    {
+        // すでにお気に入りしているか
+        $exist = $this->is_favorite($micropostsId);
+
+        if ($exist) {
+            // お気に入り済み
+            return false;
+        } else {
+            // 上記以外はお気に入りする
+            $this->favorites()->attach($micropostsId);
+            return true;
+        }
+    }
+    
+    /**
+     * $micropostsIdで指定された投稿をお気に入り解除する。
+     *
+     * @param  int  $micropostsId
+     * @return bool
+     */
+    public function unfavorite($micropostsId)
+    {
+        // すでにお気に入りしているか
+        $exist = $this->is_favorite($micropostsId);
+
+        if ($exist) {
+            // お気に入り済み
+            $this->favorites()->detach($micropostsId);
+            return true;
+        } else {
+            // 上記以外の場合は何もしない
+            return false;
+        }
+    }
+    
+    /**
+     * 指定された $micropostsIdの投稿をこのユーザがお気に入り中であるか調べる。お気に入り中ならtrueを返す。
+     *
+     * @param  int  $micropostsId
+     * @return bool
+     */
+    public function is_favorite($micropostsId)
+    {
+        // お気に入り中投稿の中に $micropostsIdのものが存在するか
+        return $this->favorites()->where('micropost_id', $micropostsId)->exists();
+    }
+    
 }
